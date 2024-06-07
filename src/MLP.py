@@ -269,7 +269,7 @@ class MLP(nn.Module):
                     fp = cm[:, class_label].sum() - tp
                     class_value = tp / (tp + fp)
                     precision_values[class_label] = class_value
-                    value = precision_values
+                value = precision_values
             case 'recall':
                 recall_values = {}
                 for class_label in range(cm.shape[0]):
@@ -277,7 +277,7 @@ class MLP(nn.Module):
                     fn = cm[class_label].sum() - tp
                     class_value = tp / (tp + fn)
                     recall_values[class_label] = class_value
-                    value = recall_values
+                value = recall_values
             case 'f1':
                 f1_values = {}
                 for class_label in range(cm.shape[0]):
@@ -288,6 +288,6 @@ class MLP(nn.Module):
                     recall = tp / (tp + fn)
                     class_value = 2 * (precision * recall) / (precision + recall)
                     f1_values[class_label] = class_value
-                    value = f1_values
+                value = f1_values
 
         return {metric: value}
