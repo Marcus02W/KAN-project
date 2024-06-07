@@ -10,6 +10,10 @@ Download and paste datasets in the "data" directory in their respective subdirec
 
 [Kaggle Download](https://www.kaggle.com/datasets/oddrationale/mnist-in-csv/data "Link to visit the MNIST dataset download page on Kaggle")
 
+### California Housing
+
+[Kaggle Download](https://www.kaggle.com/datasets/camnugent/california-housing-prices/data "Link to visit the California Housing dataset download page on Kaggle")
+
 ## Install Requirements
 
 Use/Install Python 3.11.9 with (pre)installed Virtual Environments package or an (ana)conda installation to create the environment.
