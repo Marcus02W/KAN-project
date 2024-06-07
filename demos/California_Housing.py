@@ -42,19 +42,20 @@ model = MLP(input_size, num_hidden_layers, hidden_size, output_size, hidden_act,
 model.summary()
 
 # train parameters
-batch_size = 100
-loss_fn = 'mse'
-max_epochs = 256
+batch_size = 128
+loss_fn = 'mae'
+max_epochs = 128
 early_stop_threshold = 1000
 early_stop_patience = 8
 lr = 0.001
 optimizer = 'adam'
+loss_plot = True
 
 # train model
-model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer)
+model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, loss_plot)
 
 # test model
-metric = 'mae'
+metric = 'mape'
 result = model.test(x_test, y_test, batch_size, metric)
 
 # print result

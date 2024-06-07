@@ -24,7 +24,7 @@ y_test = torch.tensor(test['label'].values, dtype=torch.int64)
 # define network parameters
 input_size = len(x_train[0])
 num_hidden_layers = 8
-hidden_size = 32
+hidden_size = 16
 output_size = train['label'].nunique()
 hidden_act = 'relu'
 output_act = 'softmax'
@@ -35,16 +35,17 @@ model = MLP(input_size, num_hidden_layers, hidden_size, output_size, hidden_act,
 model.summary()
 
 # train parameters
-batch_size = 10000
+batch_size = 1024
 loss_fn = 'cross_entropy'
 max_epochs = 64
-early_stop_threshold = 0.005
-early_stop_patience = 3
+early_stop_threshold = 0.01
+early_stop_patience = 4
 lr = 0.001
 optimizer = 'adam'
+plot_loss = True
 
 # train model
-model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer)
+model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss)
 
 # test model
 metric = 'accuracy'
