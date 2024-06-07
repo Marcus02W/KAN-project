@@ -164,6 +164,7 @@ class MLP(nn.Module):
             for inputs, targets in dataloader:
                 optimizer.zero_grad()
                 outputs = self.forward(inputs)
+                outputs = outputs.squeeze()
                 loss = loss_fn(outputs, targets)
                 loss.backward()
                 optimizer.step()
@@ -213,6 +214,15 @@ class MLP(nn.Module):
                     correct += (predicted == targets).sum().item()
             # return accuracy dictionary
             return {'metric': metric, 'value': correct / total}
+        elif metric == 'mae':
+            with no_grad():
+                mae = 0.0
+                # loop through batches
+                for inputs, targets in dataloader:
+                    outputs = self.forward(inputs)
+                    mae += nn.L1Loss()(outputs, targets).item()
+            # return mae dictionary
+            return {'metric': metric, 'value': mae / len(dataloader)}
         elif metric == 'mse':
             with no_grad():
                 mse = 0.0
