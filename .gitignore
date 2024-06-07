@@ -1,0 +1,6 @@
+# directories to ignore
+__pycache__
+
+# files to ignore
+*.pth
+*.csv
