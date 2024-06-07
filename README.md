@@ -9,3 +9,55 @@ Download and paste datasets in the "data" directory in their respective subdirec
 ### MNIST
 
 [Kaggle Download](https://www.kaggle.com/datasets/oddrationale/mnist-in-csv/data "Link to visit the MNIST dataset download page on Kaggle")
+
+## Install Requirements
+
+Use/Install Python 3.11.9 with (pre)installed Virtual Environments package or an (ana)conda installation to create the environment.
+
+### Virtual Envorinment
+
+1. Create
+
+```bash
+python -m venv kan
+```
+
+2. Activate
+
+Unix/Linux/Max:
+
+```bash
+source kan/bin/activate
+```
+
+Windows:
+
+```
+kan\Scripts\activate
+```
+
+3. Install
+
+```python
+pip install -r requirements.txt
+```
+
+### Conda Environment
+
+1. Create
+
+```bash
+conda create --name kan python=3.11.9
+```
+
+2. Activate
+
+```bash
+conda activate kan
+```
+
+3. Install
+
+```bash
+pip install -r requirements.txt
+```
