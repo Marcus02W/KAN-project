@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 from matplotlib import pyplot as plt
 from sklearn.metrics import confusion_matrix, mean_absolute_error, mean_squared_error, root_mean_squared_error, mean_absolute_percentage_error
+import optuna
 
 class MLP(nn.Module):
     """
@@ -291,3 +292,90 @@ class MLP(nn.Module):
                 value = f1_values
 
         return {metric: value}
+    
+def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, x_test: Tensor, y_test: Tensor, input_size: int,
+                             num_hidden_layers: tuple, hidden_size: tuple, output_size: int, hidden_act: str, output_act: str,
+                             dropout: tuple, batch_size: tuple, loss_fn: str, max_epochs: tuple, early_stop_threshold: tuple,
+                             early_stop_patience: tuple, lr: tuple, optimizer: str, plot_loss: bool, metric: str,
+                             opt_direction: str, model_path: str, n_trials: int) -> MLP:
+    """
+    Hyperparameter tuning for the MLP model class.
+    
+    Args:
+        input_size (int): Number of input features.
+        num_hidden_layers (tuple): Min/Max tuple of number of hidden layers to try.
+        hidden_size (tuple): Min/Max tuple of number of neurons in each hidden layer to try.
+        output_size (int): Number of output features.
+        hidden_act (str): Activation function name for hidden layers (e.g., 'relu').
+        output_act (str): Activation function name for output layer (e.g., 'softmax').
+        dropout (tuple): Min/Max tuple of dropout rates to try.
+        batch_size (tuple): Min/Max tuple of batch sizes to try.
+        loss_fn (str): Loss function name (e.g., 'mse').
+        max_epochs (tuple): Min/Max tuple of maximum number of epochs to train.
+        early_stop_threshold (tuple): Min/Max tuple of thresholds for early stopping to try.
+        early_stop_patience (tuple): Min/Max tuple of number of epochs to wait before early stopping to try.
+        lr (tuple): Min/Max tuple of learning rates to try.
+        optimizer (str): Optimizer name (e.g., 'adam').
+        plot_loss (bool): Plot loss history.
+        metric (str): Metric name (e.g., 'accuracy').
+        opt_direction (str): Optimization direction ('minimize' or 'maximize').
+        model_path (str): Path to save best model.
+        n_trials (int): Number of trials for hyperparameter tuning.
+        
+    Returns:
+        MLP: Best model found during hyperparameter tuning.
+    """
+    
+    def _objective(trial: optuna.Trial, x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test,
+                     input_size=input_size, num_hidden_layers=num_hidden_layers, hidden_size=hidden_size,
+                     output_size=output_size, hidden_act=hidden_act, output_act=output_act, dropout=dropout,
+                     batch_size=batch_size, loss_fn=loss_fn, max_epochs=max_epochs, early_stop_threshold=early_stop_threshold,
+                     early_stop_patience=early_stop_patience, lr=lr, optimizer=optimizer, plot_loss=plot_loss, metric=metric,
+                     opt_direction=opt_direction, model_path=model_path) -> float:
+        """
+        Objective function for hyperparameter tuning.
+        
+        Args:
+            trial (optuna.Trial): Optuna trial object.
+            (...) Downstream arguments are passed for optimization.
+            
+        Returns:
+            float: Metric value to minimize.
+        """
+        best_metric = 0.0
+        
+        # sample hyperparameters
+        num_hidden_layers = trial.suggest_int('num_hidden_layers', num_hidden_layers[0], num_hidden_layers[1])
+        hidden_size = trial.suggest_int('hidden_size', hidden_size[0], hidden_size[1])
+        dropout = trial.suggest_float('dropout', dropout[0], dropout[1])
+        batch_size = trial.suggest_int('batch_size', batch_size[0], batch_size[1])
+        max_epochs = trial.suggest_int('max_epochs', max_epochs[0], max_epochs[1])
+        early_stop_threshold = trial.suggest_float('early_stop_threshold', early_stop_threshold[0], early_stop_threshold[1])
+        early_stop_patience = trial.suggest_int('early_stop_patience', early_stop_patience[0], early_stop_patience[1])
+        lr = trial.suggest_float('lr', lr[0], lr[1])
+        
+        # create model
+        model = MLP(input_size, num_hidden_layers, hidden_size, output_size, hidden_act, output_act, dropout)
+        
+        # train model
+        model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss)
+        
+        # test model
+        result = model.test(x_test, y_test, batch_size, metric)
+        
+        # update best metric and model
+        if opt_direction == 'minimize':
+            if result[metric] < best_metric:
+                best_metric = result[metric]
+                model_save(model, model_path)
+        elif opt_direction == 'maximize':
+            if result[metric] > best_metric:
+                best_metric = result[metric]
+                model_save(model, model_path)
+        
+        return result[metric]
+    
+    study = optuna.create_study(direction=opt_direction)
+    study.optimize(_objective, n_trials, show_progress_bar=True)
+    
+    return model_load(model_path)

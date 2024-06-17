@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../src'))
 
 # global imports
-from MLP import MLP
+from MLP import MLP, mlp_tune_hyperparameters
 import pandas as pd
 import torch
 
@@ -21,38 +21,75 @@ x_test = torch.tensor(test.drop('label', axis=1).values, dtype=torch.float32)
 y_train = torch.tensor(train['label'].values, dtype=torch.int64)
 y_test = torch.tensor(test['label'].values, dtype=torch.int64)
 
-# define network parameters
-input_size = len(x_train[0])
-num_hidden_layers = 8
-hidden_size = 16
-output_size = train['label'].nunique()
-hidden_act = 'relu'
-output_act = 'softmax'
-dropout = 0.1
+# set mode ('train', 'opt', 'load)
+mode = 'opt'
 
-# create model
-model = MLP(input_size, num_hidden_layers, hidden_size, output_size, hidden_act, output_act, dropout)
-model.summary()
+if mode == 'train':
+    # define network parameters
+    input_size = len(x_train[0])
+    num_hidden_layers = 8
+    hidden_size = 16
+    output_size = train['label'].nunique()
+    hidden_act = 'relu'
+    output_act = 'softmax'
+    dropout = 0.1
 
-# train parameters
-batch_size = 1024
-loss_fn = 'cross_entropy'
-max_epochs = 64
-early_stop_threshold = 0.01
-early_stop_patience = 4
-lr = 0.001
-optimizer = 'adam'
-plot_loss = True
+    # create model
+    model = MLP(input_size, num_hidden_layers, hidden_size, output_size, hidden_act, output_act, dropout)
+    model.summary()
 
-# train model
-model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss)
+    # train parameters
+    batch_size = 1024
+    loss_fn = 'cross_entropy'
+    max_epochs = 64
+    early_stop_threshold = 0.01
+    early_stop_patience = 4
+    lr = 0.001
+    optimizer = 'adam'
+    plot_loss = True
 
-# test model
-metric = 'accuracy'
-result = model.test(x_test, y_test, batch_size, metric)
+    # train model
+    model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss)
 
-# print result
-print(result)
+    # test model
+    metric = 'accuracy'
+    result = model.test(x_test, y_test, batch_size, metric)
 
-# save model
-model.save('../models/MNIST_MLP.pth')
+    # print result
+    print(result)
+
+    # save model
+    model.save('../models/MNIST_MLP.pth')
+    
+elif mode == 'opt':
+    # define network parameters
+    input_size = len(x_train[0])
+    output_size = train['label'].nunique()
+    hidden_act = 'relu'
+    output_act = 'softmax'
+    loss_fn = 'cross_entropy'
+    optimizer = 'adam'
+    plot_loss = False
+    metric = 'accuracy'
+    model_path = '../models/MNIST_MLP_OPT.pth'
+    
+    # define optimization ranges
+    num_hidden_layers = (2, 16)
+    hidden_size = (4, 32)
+    dropout = (0.05, 0.25)
+    batch_size = (100, 10000)
+    max_epochs = (16, 128)
+    early_stop_threshold =(0.001, 0.1)
+    early_stop_patience = (2, 8)
+    lr = (0.0001, 0.1)
+    
+    # define optuna parameters
+    opt_direction = 'maximize'
+    num_trials = 10
+    
+    # call optimization function
+    mlp_tune_hyperparameters(x_train, y_train, x_test, y_test, input_size,
+                             num_hidden_layers, hidden_size, output_size, hidden_act, output_act,
+                             dropout, batch_size, loss_fn, max_epochs, early_stop_threshold,
+                             early_stop_patience, lr, optimizer, plot_loss, metric,
+                             opt_direction, model_path, num_trials)
