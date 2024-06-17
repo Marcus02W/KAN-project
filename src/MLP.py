@@ -1,5 +1,5 @@
 # imports
-from torch import nn, Tensor, optim, no_grad, max as torch_max, save as model_save, load as model_load
+from torch import nn, Tensor, optim, no_grad, save as model_save, load as model_load
 from torchsummary import summary as model_summary
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
@@ -107,16 +107,7 @@ class MLP(nn.Module):
         Args:
             model_path (str): Path to save model weights.
         """
-        model_save(self.network, model_path)
-
-    def load(self, model_path: str) -> None:
-        """
-        Load model weights from disk.
-        
-        Args:
-            model_path (str): Path to load model weights.
-        """
-        self.network = model_load(model_path)
+        model_save(self, model_path)
 
     def train(self, x: Tensor, y: Tensor, batch_size: int, loss_fn: str, max_epochs: int,
               early_stop_threshold: float, early_stop_patience: int, lr: float, optimizer: str, plot_loss: bool) -> None:
@@ -342,7 +333,11 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, x_test: Tensor, y
         Returns:
             float: Metric value to minimize.
         """
-        best_metric = 0.0
+        # best metric initialization
+        if opt_direction == 'minimize':
+            best_metric = float('inf')
+        elif opt_direction == 'maximize':
+            best_metric = 0.0
         
         # sample hyperparameters
         num_hidden_layers = trial.suggest_int('num_hidden_layers', num_hidden_layers[0], num_hidden_layers[1])
@@ -375,6 +370,7 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, x_test: Tensor, y
         
         return result[metric]
     
+    # create optuna study and optimize
     study = optuna.create_study(direction=opt_direction)
     study.optimize(_objective, n_trials, show_progress_bar=True)
     

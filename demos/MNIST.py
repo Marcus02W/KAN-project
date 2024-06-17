@@ -22,8 +22,9 @@ y_train = torch.tensor(train['label'].values, dtype=torch.int64)
 y_test = torch.tensor(test['label'].values, dtype=torch.int64)
 
 # set mode ('train', 'opt', 'load)
-mode = 'opt'
+mode = 'train'
 
+# regular training
 if mode == 'train':
     # define network parameters
     input_size = len(x_train[0])
@@ -60,7 +61,8 @@ if mode == 'train':
 
     # save model
     model.save('../models/MNIST_MLP.pth')
-    
+
+# hyperparameter optimization    
 elif mode == 'opt':
     # define network parameters
     input_size = len(x_train[0])
@@ -88,8 +90,21 @@ elif mode == 'opt':
     num_trials = 10
     
     # call optimization function
-    mlp_tune_hyperparameters(x_train, y_train, x_test, y_test, input_size,
+    tuned_model = mlp_tune_hyperparameters(x_train, y_train, x_test, y_test, input_size,
                              num_hidden_layers, hidden_size, output_size, hidden_act, output_act,
                              dropout, batch_size, loss_fn, max_epochs, early_stop_threshold,
                              early_stop_patience, lr, optimizer, plot_loss, metric,
                              opt_direction, model_path, num_trials)
+    
+# loading and testing model    
+elif mode == 'load':
+    # load model
+    model = torch.load('../models/MNIST_MLP_OPT.pth')
+    
+    # test model
+    batch_size = 1024
+    metric = 'accuracy'
+    result = model.test(x_test, y_test, batch_size, metric)
+    
+    # print result
+    print(result)
