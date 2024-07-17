@@ -49,7 +49,7 @@ y_train = torch.tensor(y_train, dtype=torch.int64)
 y_test = torch.tensor(y_test, dtype=torch.int64)
 
 # set mode ('train', 'opt', 'load)
-mode = 'opt'
+mode = 'load'
 
 # regular training
 if mode == 'train':
