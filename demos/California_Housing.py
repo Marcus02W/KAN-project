@@ -2,9 +2,9 @@
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../src'))
+from MLP import MLP, mlp_tune_hyperparameters
 
 # global imports
-from MLP import MLP, mlp_tune_hyperparameters
 import pandas as pd
 import torch
 
