@@ -22,7 +22,7 @@ y_train = torch.tensor(train['label'].values, dtype=torch.int64)
 y_test = torch.tensor(test['label'].values, dtype=torch.int64)
 
 # set mode ('train', 'opt', 'load)
-mode = 'train'
+mode = 'load'
 
 # regular training
 if mode == 'train':
@@ -87,7 +87,7 @@ elif mode == 'opt':
     
     # define optuna parameters
     opt_direction = 'maximize'
-    num_trials = 10
+    num_trials = 516
     
     # call optimization function
     tuned_model = mlp_tune_hyperparameters(x_train, y_train, x_test, y_test, input_size,

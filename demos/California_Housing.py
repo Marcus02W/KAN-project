@@ -29,7 +29,7 @@ y_train = torch.tensor(train['median_house_value'].values, dtype=torch.float32)
 y_test = torch.tensor(test['median_house_value'].values, dtype=torch.float32)
 
 # set mode ('train', 'opt', 'load)
-mode = 'train'
+mode = 'load'
 
 # regular training
 if mode == 'train':
@@ -94,7 +94,7 @@ elif mode == 'opt':
     
     # define optuna parameters
     opt_direction = 'minimize'
-    num_trials = 10
+    num_trials = 1024
     
     # call optimization function
     tuned_model = mlp_tune_hyperparameters(x_train, y_train, x_test, y_test, input_size,
