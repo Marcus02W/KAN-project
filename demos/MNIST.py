@@ -2,11 +2,13 @@
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../src'))
+from MLP import MLP, mlp_tune_hyperparameters
 
 # global imports
-from MLP import MLP, mlp_tune_hyperparameters
+import numpy as np
 import pandas as pd
 import torch
+from torchvision import transforms
 
 # set seed
 torch.manual_seed(42)
@@ -15,14 +17,39 @@ torch.manual_seed(42)
 train = pd.read_csv('../data/MNIST/mnist_train.csv')
 test = pd.read_csv('../data/MNIST/mnist_test.csv')
 
-# convert data to tensors
-x_train = torch.tensor(train.drop('label', axis=1).values, dtype=torch.float32)
-x_test = torch.tensor(test.drop('label', axis=1).values, dtype=torch.float32)
-y_train = torch.tensor(train['label'].values, dtype=torch.int64)
-y_test = torch.tensor(test['label'].values, dtype=torch.int64)
+# convert data to numpy arrays
+x_train = train.drop('label', axis=1).values
+x_test = test.drop('label', axis=1).values
+y_train = train['label'].values
+y_test = test['label'].values
+
+# set target size to scale images
+target_size = 8
+
+# define transformation
+transform = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.Resize((target_size, target_size)),
+    transforms.ToTensor()
+])
+
+# transform the data
+def transform_images(images):
+    transformed_images = []
+    for image in images:
+        image = image.reshape(28, 28).astype(np.uint8)
+        image = transform(image)
+        image = image.view(-1)
+        transformed_images.append(image)
+    return torch.stack(transformed_images)
+
+x_train = transform_images(x_train)
+x_test = transform_images(x_test)
+y_train = torch.tensor(y_train, dtype=torch.int64)
+y_test = torch.tensor(y_test, dtype=torch.int64)
 
 # set mode ('train', 'opt', 'load)
-mode = 'load'
+mode = 'opt'
 
 # regular training
 if mode == 'train':
@@ -87,7 +114,7 @@ elif mode == 'opt':
     
     # define optuna parameters
     opt_direction = 'maximize'
-    num_trials = 516
+    num_trials = 1024
     
     # call optimization function
     tuned_model = mlp_tune_hyperparameters(x_train, y_train, x_test, y_test, input_size,
