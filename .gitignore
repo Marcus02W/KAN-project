@@ -4,3 +4,4 @@ __pycache__
 # files to ignore
 #*.pth --> comment out until model files are too big
 *.csv
+*.pt
