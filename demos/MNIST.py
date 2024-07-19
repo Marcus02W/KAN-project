@@ -49,14 +49,14 @@ y_train = torch.tensor(y_train, dtype=torch.int64)
 y_test = torch.tensor(y_test, dtype=torch.int64)
 
 # set mode ('train', 'opt', 'load)
-mode = 'load'
+mode = 'train'
 
 # regular training
 if mode == 'train':
     # define network parameters
     input_size = len(x_train[0])
-    num_hidden_layers = 8
-    hidden_size = 16
+    num_hidden_layers = 1
+    hidden_size = 32
     output_size = train['label'].nunique()
     hidden_act = 'relu'
     output_act = 'softmax'
