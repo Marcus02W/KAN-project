@@ -97,6 +97,46 @@ class MLP(nn.Module):
             Tensor: Output data.
         """
         return self.network(x)
+    
+    def forward_steps(self, input: np.array) -> list:
+        """
+        Step-by-step forward pass through the network.
+        The activation states for input and after every activation function are observed.
+        
+        Args:
+            x (Tensor): Input data.
+                
+        Returns:
+            list: List of output data at each layer.
+        """
+        # Check if input is 8x8 image
+        if input.shape == (8, 8):
+            # Flatten image
+            input = input.flatten()
+        
+            # Tranform image array
+            input =Tensor(input)
+            
+            # Flatten image
+            input = input.view(-1)
+            
+            # Add batch dimension
+            input = input.unsqueeze(0)
+            
+            # Initialize list to store steps and store input
+            steps = []
+            steps.append(input.squeeze().detach().numpy())
+            
+            # Iterate through layers and store output after each activation function
+            for layer in self.network:
+                input = layer(input)
+                if isinstance(layer, nn.ReLU) or isinstance(layer, nn.Softmax):
+                    steps.append(input.squeeze().detach().numpy())
+            
+            return steps
+        else:
+            # Error message if image shape is not 8x8
+            raise ValueError("Image shape is not matching 8x8.")
 
     def summary(self) -> None:
         """Print network summary."""
