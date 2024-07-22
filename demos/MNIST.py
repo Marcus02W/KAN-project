@@ -49,7 +49,7 @@ y_train = torch.tensor(y_train, dtype=torch.int64)
 y_test = torch.tensor(y_test, dtype=torch.int64)
 
 # set mode ('train', 'opt', 'load)
-mode = 'train'
+mode = 'opt'
 
 # regular training
 if mode == 'train':
@@ -101,6 +101,7 @@ elif mode == 'opt':
     plot_loss = False
     metric = 'accuracy'
     model_path = '../models/MNIST_MLP_OPT.pth'
+    split_ratio = 0.25
     
     # define optimization ranges
     num_hidden_layers = (2, 16)
@@ -117,11 +118,11 @@ elif mode == 'opt':
     num_trials = 1024
     
     # call optimization function
-    tuned_model = mlp_tune_hyperparameters(x_train, y_train, x_test, y_test, input_size,
+    tuned_model = mlp_tune_hyperparameters(x_train, y_train, input_size,
                              num_hidden_layers, hidden_size, output_size, hidden_act, output_act,
                              dropout, batch_size, loss_fn, max_epochs, early_stop_threshold,
                              early_stop_patience, lr, optimizer, plot_loss, metric,
-                             opt_direction, model_path, num_trials)
+                             opt_direction, model_path, num_trials, split_ratio=split_ratio)
     
 # loading and testing model    
 elif mode == 'load':

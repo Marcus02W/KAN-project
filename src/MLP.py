@@ -1,5 +1,5 @@
 # imports
-from torch import nn, Tensor, optim, no_grad, save as model_save, load as model_load
+from torch import nn, Tensor, optim, no_grad, save as model_save, load as model_load, randperm, tensor
 from torchsummary import summary as model_summary
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
@@ -284,11 +284,11 @@ class MLP(nn.Module):
 
         return {metric: value}
     
-def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, x_test: Tensor, y_test: Tensor, input_size: int,
-                             num_hidden_layers: tuple, hidden_size: tuple, output_size: int, hidden_act: str, output_act: str,
-                             dropout: tuple, batch_size: tuple, loss_fn: str, max_epochs: tuple, early_stop_threshold: tuple,
-                             early_stop_patience: tuple, lr: tuple, optimizer: str, plot_loss: bool, metric: str,
-                             opt_direction: str, model_path: str, n_trials: int) -> MLP:
+def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, input_size: int, num_hidden_layers: tuple, hidden_size: tuple,
+                             output_size: int, hidden_act: str, output_act: str, dropout: tuple, batch_size: tuple,
+                             loss_fn: str, max_epochs: tuple, early_stop_threshold: tuple, early_stop_patience: tuple,
+                             lr: tuple, optimizer: str, plot_loss: bool, metric: str, opt_direction: str,
+                             model_path: str, n_trials: int, split_ratio: float) -> MLP:
     """
     Hyperparameter tuning for the MLP model class.
     
@@ -312,12 +312,21 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, x_test: Tensor, y
         opt_direction (str): Optimization direction ('minimize' or 'maximize').
         model_path (str): Path to save best model.
         n_trials (int): Number of trials for hyperparameter tuning.
+        split_ratio (float): Ratio of training data to use for validation.
         
     Returns:
         MLP: Best model found during hyperparameter tuning.
     """
+    # Random sample validation set
+    random_indices = randperm(x_train.size(0))[:int(len(x_train) * split_ratio)]
+    x_val = x_train[random_indices]
+    y_val = y_train[random_indices]
     
-    def _objective(trial: optuna.Trial, x_train=x_train, y_train=y_train, x_test=x_test, y_test=y_test,
+    remaining_indices = tensor([i for i in range(len(x_train)) if i not in random_indices])
+    x_train = x_train[remaining_indices]
+    y_train = y_train[remaining_indices]
+    
+    def _objective(trial: optuna.Trial, x_train=x_train, y_train=y_train, x_val=x_val, y_val=y_val,
                      input_size=input_size, num_hidden_layers=num_hidden_layers, hidden_size=hidden_size,
                      output_size=output_size, hidden_act=hidden_act, output_act=output_act, dropout=dropout,
                      batch_size=batch_size, loss_fn=loss_fn, max_epochs=max_epochs, early_stop_threshold=early_stop_threshold,
@@ -356,7 +365,7 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, x_test: Tensor, y
         model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss)
         
         # test model
-        result = model.test(x_test, y_test, batch_size, metric)
+        result = model.test(x_val, y_val, batch_size, metric)
         
         # update best metric and model
         if opt_direction == 'minimize':
@@ -371,7 +380,9 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, x_test: Tensor, y
         return result[metric]
     
     # create optuna study and optimize
-    study = optuna.create_study(direction=opt_direction)
+    study_name = "MLP-MINIST"
+    storage_name = f"sqlite:///{study_name}.db"
+    study = optuna.create_study(direction=opt_direction, study_name=study_name ,storage=storage_name, load_if_exists=True)
     study.optimize(_objective, n_trials, show_progress_bar=True)
     
     return model_load(model_path)
