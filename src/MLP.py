@@ -1,4 +1,6 @@
 # imports
+import numpy as np
+import pandas as pd
 from torch import nn, Tensor, optim, no_grad, save as model_save, load as model_load, randperm, tensor
 from torchsummary import summary as model_summary
 from torch.utils.data import DataLoader, TensorDataset
@@ -386,3 +388,44 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, input_size: int, 
     study.optimize(_objective, n_trials, show_progress_bar=True)
     
     return model_load(model_path)
+
+def mnist_forward_df(model: MLP, input: np.array) -> pd.DataFrame:
+    """
+    Helper function to visualize the forward pass of the MNIST MLP model in our app.
+    
+    Args:
+        model (MLP): Trained MLP model.
+        input (np.array): Input image array.
+        
+    Returns:
+        DataFrame: DataFrame containing output probabilities. Data is stored in 'probabilities' column.
+    """
+    
+    # check if the np image array is 8x8
+    if input.shape == (8, 8):
+        # Flatten image
+        input = input.flatten()
+    
+        # Tranform image array
+        input =Tensor(input)
+        
+        # Flatten image
+        input = input.view(-1)
+        
+        # Add batch dimension
+        input = input.unsqueeze(0)
+        
+        # Forward pass
+        output = model(input)
+        
+        # Remove batch dimension
+        output = output.squeeze()
+        
+        # Transform output to numpy array and dataframe
+        output = output.detach().numpy()
+        output = pd.DataFrame(output, columns=['probabilities'])
+        
+        return output
+    else:
+        # Error message if image shape is not 8x8
+        raise ValueError("Image shape is not matching 8x8.")
