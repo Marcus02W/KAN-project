@@ -128,3 +128,98 @@ def simple_mlp_vis(mlp, figsize=(20, 10), bottom2top=True):
     img = (img * 255).astype('uint8')
     
     return img
+
+def mlp_weights_vis(mlp, figsize=(20, 10), bottom2top=True):
+    """
+    Visualize a simple feedforward neural network using a directed graph with edge transparency
+    based on the normalized weights.
+
+    Args:
+        mlp (torch.nn.Module): The model containing the Sequential network.
+        figsize (tuple): Size of the figure (width, height) in inches.
+        bottom2top (bool): If True, invert the y-axis to show the input layer at the bottom.
+
+    Returns:
+        numpy.ndarray: An RGB image of the network visualization.
+    """
+    # Create a directed graph
+    G = nx.DiGraph()
+    
+    # Extract network data from the model
+    network_structure, weights_list = extract_sequential_network_data(mlp)
+    
+    # Initialise dictionary to store neuron labels
+    labels = {}
+    
+    # Determine the maximum number of neurons in any layer
+    max_neurons = max(network_structure)
+    
+    # Add neurons to the graph
+    for layer in range(len(network_structure)):
+        # Get number of neurons in the current layer
+        num_neurons = network_structure[layer]
+        
+        # Calculate a centering offset
+        offset = (max_neurons - num_neurons) / 2
+        
+        for neuron in range(num_neurons):
+            # Unique identifier for the neuron
+            node_id = (layer, neuron)
+            
+            # Add the neuron to the graph
+            G.add_node(node_id, layer=layer, pos=(neuron + offset, -layer))
+            
+            # Store the neuron label
+            labels[node_id] = neuron
+    
+    # Normalize weights and add connections to the graph with edge transparency based on weights
+    for layer in range(len(weights_list)):
+        weights = weights_list[layer]
+        # Normalize weights between 0 and 1
+        norm_weights = (weights - weights.min()) / (weights.max() - weights.min())
+        
+        for neuron1 in range(weights.shape[0]):
+            for neuron2 in range(weights.shape[1]):
+                # Get the normalized weight for the edge transparency
+                transparency = norm_weights[neuron1, neuron2]
+                G.add_edge((layer, neuron1), (layer + 1, neuron2), weight=transparency)
+    
+    # Set up plot
+    fig, ax = plt.subplots(figsize=figsize)
+    
+    # Get node positions
+    pos = nx.get_node_attributes(G, 'pos')
+    
+    # Draw the graph to the plot with edge transparency based on weights
+    edges = G.edges(data=True)
+    edge_colors = [(12/255, 142/255, 210/255, edge[2]['weight']) for edge in edges]
+    nx.draw(G, pos, labels=labels, with_labels=False, arrows=False, node_size=160, node_color=[(12/255, 142/255, 210/255)], edge_color=edge_colors, edgecolors=[(0/255, 18/255, 30/255)], width=0.6)
+    
+    # Adjust plot limits to reduce space
+    x_values, y_values = zip(*pos.values())
+    x_margin = (max(x_values) - min(x_values)) * 0.05  # 5% margin
+    y_margin = (max(y_values) - min(y_values)) * 0.05  # 5% margin
+    ax.set_xlim(min(x_values) - x_margin, max(x_values) + x_margin)
+    ax.set_ylim(min(y_values) - y_margin, max(y_values) + y_margin)
+    
+    # Set the background color
+    fig.set_facecolor((0/255, 18/255, 30/255))
+    
+    # Invert the y-axis if required
+    if bottom2top:
+        ax.invert_yaxis()
+    
+    # Save the plot to a BytesIO object (RAM)
+    buf = BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
+    buf.seek(0)
+
+    # Read the image from BytesIO and convert it to an RGB array
+    img = plt.imread(buf)
+    buf.close()
+    plt.close(fig)
+    
+    # Transform the image to the range [0, 255]
+    img = (img * 255).astype('uint8')
+    
+    return img
