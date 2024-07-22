@@ -203,7 +203,7 @@ def mlp_weights_vis(mlp, figsize=(20, 10), bottom2top=True):
     ax.set_ylim(min(y_values) - y_margin, max(y_values) + y_margin)
     
     # Set the background color
-    fig.set_facecolor((0/255, 18/255, 30/255))
+    fig.set_facecolor((14/255, 17/255, 23/255))
     
     # Invert the y-axis if required
     if bottom2top:
