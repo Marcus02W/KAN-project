@@ -1,6 +1,6 @@
 from torch import load
 from MLP import mnist_forward_df
-from MLP_VIS import mlp_weights_vis, mlp_forward_vis
+from MLP_VIS import mlp_weights_vis, mlp_inference_vis
 
 def streamlit_mlp_static_api(path: str) -> None:
     
