@@ -151,8 +151,8 @@ class MLP(nn.Module):
         """
         model_save(self, model_path)
 
-    def train(self, x: Tensor, y: Tensor, batch_size: int, loss_fn: str, max_epochs: int,
-              early_stop_threshold: float, early_stop_patience: int, lr: float, optimizer: str, plot_loss: bool) -> None:
+    def train(self, x: Tensor, y: Tensor, batch_size: int, loss_fn: str, max_epochs: int, early_stop_threshold: float,
+              early_stop_patience: int, lr: float, optimizer: str, plot_loss: bool, return_loss: bool) -> None:
         """
         Training loop for the model.
         
@@ -241,6 +241,9 @@ class MLP(nn.Module):
                 if patience_counter >= early_stop_patience:
                     print(f"Early stopping at epoch {epoch+1}")
                     break
+        
+        # Check if loss plot should be returned
+        if return_loss: return loss_history
         
         # check if loss plot should be displayed
         if plot_loss: _plot_loss(loss_history, loss_fn_str)
