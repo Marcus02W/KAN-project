@@ -225,7 +225,7 @@ def mlp_weights_vis(mlp, figsize=(20, 10), bottom2top=True):
     
     return img
 
-def mlp_forward_vis(mlp, input_image, figsize=(20, 10), bottom2top=True):
+def mlp_inference_vis(mlp, input_image, figsize=(20, 10), bottom2top=True):
     """
     Visualize a simple feedforward neural network using a directed graph with edge transparency
     based on the normalized weights and node colors based on the activations.

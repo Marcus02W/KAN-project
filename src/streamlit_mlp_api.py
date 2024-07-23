@@ -16,6 +16,6 @@ def streamlit_mlp_inference_api(path: str, image) -> None:
     
     pred_df = mnist_forward_df(model, image)
     
-    img = mlp_forward_vis(model, image)
+    img = mlp_inference_vis(model, image)
     
     return pred_df, img
