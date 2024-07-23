@@ -330,7 +330,7 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, input_size: int, 
                              output_size: int, hidden_act: str, output_act: str, dropout: tuple, batch_size: tuple,
                              loss_fn: str, max_epochs: tuple, early_stop_threshold: tuple, early_stop_patience: tuple,
                              lr: tuple, optimizer: str, plot_loss: bool, metric: str, opt_direction: str,
-                             model_path: str, n_trials: int, split_ratio: float) -> MLP:
+                             model_path: str, n_trials: int, split_ratio: float, study_name: str) -> MLP:
     """
     Hyperparameter tuning for the MLP model class.
     
@@ -355,12 +355,13 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, input_size: int, 
         model_path (str): Path to save best model.
         n_trials (int): Number of trials for hyperparameter tuning.
         split_ratio (float): Ratio of training data to use for validation.
+        study_name (str): Name of the optuna study.
         
     Returns:
         MLP: Best model found during hyperparameter tuning.
     """
     # Random sample validation set
-    random_indices = randperm(x_train.size(0))[:int(len(x_train) * split_ratio)]
+    random_indices = randperm(x_train.size(0))[:round(len(x_train) * split_ratio)]
     x_val = x_train[random_indices]
     y_val = y_train[random_indices]
     
@@ -422,7 +423,6 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, input_size: int, 
         return result[metric]
     
     # create optuna study and optimize
-    study_name = "MLP-MINIST"
     storage_name = f"sqlite:///{study_name}.db"
     study = optuna.create_study(direction=opt_direction, study_name=study_name ,storage=storage_name, load_if_exists=True)
     study.optimize(_objective, n_trials, show_progress_bar=True)

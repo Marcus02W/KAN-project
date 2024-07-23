@@ -29,7 +29,7 @@ y_train = torch.tensor(train['median_house_value'].values, dtype=torch.float32)
 y_test = torch.tensor(test['median_house_value'].values, dtype=torch.float32)
 
 # set mode ('train', 'opt', 'load)
-mode = 'load'
+mode = 'opt'
 
 # regular training
 if mode == 'train':
@@ -67,7 +67,7 @@ if mode == 'train':
     print(result)
     
     # save model
-    model.save('../models/California_Housing_MLP.pth')
+    model.save('../models/MLP/Demo/California_Housing_MLP.pth')
 
 # hyperparameter optimization
 elif mode == 'opt':
@@ -80,7 +80,9 @@ elif mode == 'opt':
     optimizer = 'adam'
     plot_loss = False
     metric = 'mape'
-    model_path = '../models/California_Housing_MLP_OPT.pth'
+    model_path = '../models/MLP/Demo/California_Housing_MLP_OPT.pth'
+    split_ratio = 0.25
+    study_name = 'MLP-California-Housing'
     
     # define optimization ranges
     num_hidden_layers = (2, 16)
@@ -97,16 +99,16 @@ elif mode == 'opt':
     num_trials = 1024
     
     # call optimization function
-    tuned_model = mlp_tune_hyperparameters(x_train, y_train, x_test, y_test, input_size,
+    tuned_model = mlp_tune_hyperparameters(x_train, y_train, input_size,
                              num_hidden_layers, hidden_size, output_size, hidden_act, output_act,
                              dropout, batch_size, loss_fn, max_epochs, early_stop_threshold,
-                             early_stop_patience, lr, optimizer, plot_loss, metric,
-                             opt_direction, model_path, num_trials)
+                             early_stop_patience, lr, optimizer, plot_loss, metric, opt_direction,
+                             model_path, num_trials, split_ratio, study_name)
     
 # loading and testing model    
 elif mode == 'load':
     # load model
-    model = torch.load('../models/California_Housing_MLP.pth')
+    model = torch.load('../models/MLP/Demo/California_Housing_MLP.pth')
     
     # test model
     batch_size = 1024

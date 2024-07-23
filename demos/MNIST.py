@@ -87,7 +87,7 @@ if mode == 'train':
     print(result)
 
     # save model
-    model.save('../models/MNIST_MLP.pth')
+    model.save('../models/MLP/Demo/MNIST_MLP.pth')
 
 # hyperparameter optimization    
 elif mode == 'opt':
@@ -100,8 +100,9 @@ elif mode == 'opt':
     optimizer = 'adam'
     plot_loss = False
     metric = 'accuracy'
-    model_path = '../models/MNIST_MLP_OPT.pth'
+    model_path = '../models/MLP/Demo/MNIST_MLP_OPT.pth'
     split_ratio = 0.25
+    study_name = 'MLP-MNIST'
     
     # define optimization ranges
     num_hidden_layers = (2, 16)
@@ -121,8 +122,8 @@ elif mode == 'opt':
     tuned_model = mlp_tune_hyperparameters(x_train, y_train, input_size,
                              num_hidden_layers, hidden_size, output_size, hidden_act, output_act,
                              dropout, batch_size, loss_fn, max_epochs, early_stop_threshold,
-                             early_stop_patience, lr, optimizer, plot_loss, metric,
-                             opt_direction, model_path, num_trials, split_ratio=split_ratio)
+                             early_stop_patience, lr, optimizer, plot_loss, metric, opt_direction,
+                             model_path, num_trials, split_ratio, study_name)
     
 # loading and testing model    
 elif mode == 'load':
