@@ -55,9 +55,10 @@ if mode == 'train':
     lr = 0.001
     optimizer = 'adam'
     loss_plot = True
+    return_loss = False
 
     # train model
-    model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, loss_plot)
+    model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, loss_plot, return_loss)
 
     # test model
     metric = 'mape'
@@ -79,6 +80,7 @@ elif mode == 'opt':
     loss_fn = 'mae'
     optimizer = 'adam'
     plot_loss = False
+    return_loss = False
     metric = 'mape'
     model_path = '../models/MLP/Demo/California_Housing_MLP_OPT.pth'
     split_ratio = 0.25
@@ -103,7 +105,7 @@ elif mode == 'opt':
                              num_hidden_layers, hidden_size, output_size, hidden_act, output_act,
                              dropout, batch_size, loss_fn, max_epochs, early_stop_threshold,
                              early_stop_patience, lr, optimizer, plot_loss, metric, opt_direction,
-                             model_path, num_trials, split_ratio, study_name)
+                             model_path, num_trials, split_ratio, study_name, return_loss)
     
 # loading and testing model    
 elif mode == 'load':

@@ -333,7 +333,7 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, input_size: int, 
                              output_size: int, hidden_act: str, output_act: str, dropout: tuple, batch_size: tuple,
                              loss_fn: str, max_epochs: tuple, early_stop_threshold: tuple, early_stop_patience: tuple,
                              lr: tuple, optimizer: str, plot_loss: bool, metric: str, opt_direction: str,
-                             model_path: str, n_trials: int, split_ratio: float, study_name: str) -> MLP:
+                             model_path: str, n_trials: int, split_ratio: float, study_name: str, return_loss: bool) -> MLP:
     """
     Hyperparameter tuning for the MLP model class.
     
@@ -359,6 +359,7 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, input_size: int, 
         n_trials (int): Number of trials for hyperparameter tuning.
         split_ratio (float): Ratio of training data to use for validation.
         study_name (str): Name of the optuna study.
+        return_loss (bool): Return loss history.
         
     Returns:
         MLP: Best model found during hyperparameter tuning.
@@ -408,7 +409,7 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, input_size: int, 
         model = MLP(input_size, num_hidden_layers, hidden_size, output_size, hidden_act, output_act, dropout)
         
         # train model
-        model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss)
+        model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss, return_loss)
         
         # test model
         result = model.test(x_val, y_val, batch_size, metric)
