@@ -23,8 +23,8 @@ def interpolate_color(color0, color1, x):
     return (r, g, b)
 
 # Example usage:
-#color_at_0 = (0, 0, 255)  # Left
-#color_at_1 = (255, 0, 0)  # Right
+#color_at_0 = (12, 142, 210)  # Left
+#color_at_1 = (186, 0, 32)  # Right
 #x_value = 0.5  # Midpoint
 #interpolated_color = interpolate_color(color_at_0, color_at_1, x_value)
 
