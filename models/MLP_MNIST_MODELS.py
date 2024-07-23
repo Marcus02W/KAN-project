@@ -70,7 +70,7 @@ for hidden_size in hidden_sizes:
         total_params = sum(p.numel() for p in model.parameters())
         
         # create a dataframe to safe information
-        df = pd.DataFrame(columns=['num_hidden_layers', 'hidden_size', 'total_params', 'loss', 'time', 'accuracy'])
+        df = pd.DataFrame()
         df['num_hidden_layers'] = [num_hidden_layer]
         df['hidden_size'] = [hidden_size]
         df['total_params'] = [total_params]
