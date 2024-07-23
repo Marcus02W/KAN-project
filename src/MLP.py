@@ -1,7 +1,7 @@
 # imports
 import numpy as np
 import pandas as pd
-from torch import nn, Tensor, optim, no_grad, save as model_save, load as model_load, randperm, tensor
+from torch import nn, Tensor, optim, no_grad, save as model_save, load as model_load, randperm, tensor, manual_seed
 from torchsummary import summary as model_summary
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
@@ -28,6 +28,9 @@ class MLP(nn.Module):
             output_act (str): Activation function name for output layer (e.g., 'softmax').
             dropout (float): Dropout rate.
         """
+        # set seed
+        manual_seed(42)
+        
         # call parent constructor
         super(MLP, self).__init__()
 
@@ -83,6 +86,8 @@ class MLP(nn.Module):
             return nn.Sigmoid()
         elif act_name == 'softmax':
             return nn.Softmax(dim=1)
+        elif act_name == 'identity':
+            return nn.Identity()
         else:
             raise ValueError(f"Activation function {act_name} not supported.")
 
@@ -109,6 +114,7 @@ class MLP(nn.Module):
         Returns:
             list: List of output data at each layer.
         """
+        self.eval()
         # Check if input is 8x8 image
         if input.shape == (8, 8):
             # Flatten image
@@ -130,7 +136,7 @@ class MLP(nn.Module):
             # Iterate through layers and store output after each activation function
             for layer in self.network:
                 input = layer(input)
-                if isinstance(layer, nn.ReLU) or isinstance(layer, nn.Softmax):
+                if isinstance(layer, nn.ReLU) or isinstance(layer, nn.Identity):
                     steps.append(input.squeeze().detach().numpy())
             
             return steps
@@ -151,7 +157,7 @@ class MLP(nn.Module):
         """
         model_save(self, model_path)
 
-    def train(self, x: Tensor, y: Tensor, batch_size: int, loss_fn: str, max_epochs: int, early_stop_threshold: float,
+    def fit(self, x: Tensor, y: Tensor, batch_size: int, loss_fn: str, max_epochs: int, early_stop_threshold: float,
               early_stop_patience: int, lr: float, optimizer: str, plot_loss: bool, return_loss: bool) -> None:
         """
         Training loop for the model.
@@ -168,6 +174,7 @@ class MLP(nn.Module):
             optimizer (str): Optimizer name (e.g., 'adam').
         """
         loss_fn_str = loss_fn
+        self.train()
         
         def _plot_loss(loss_history: list, loss_fn: str) -> None:
             """
@@ -261,6 +268,8 @@ class MLP(nn.Module):
         Returns:
             dict: Dictionary containing metric and value.
         """
+        self.eval()
+        
         # create dataset and dataloader
         dataset = TensorDataset(x, y)
         dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
@@ -409,7 +418,7 @@ def mlp_tune_hyperparameters(x_train: Tensor, y_train: Tensor, input_size: int, 
         model = MLP(input_size, num_hidden_layers, hidden_size, output_size, hidden_act, output_act, dropout)
         
         # train model
-        model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss, return_loss)
+        model.fit(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss, return_loss)
         
         # test model
         result = model.test(x_val, y_val, batch_size, metric)
@@ -445,28 +454,26 @@ def mnist_forward_df(model: MLP, input: np.array) -> pd.DataFrame:
         DataFrame: DataFrame containing output probabilities. Data is stored in 'probabilities' column.
     """
     
+    def softmax(x):
+        e_x = np.exp(x - np.max(x))
+        return e_x / e_x.sum(axis=0)
+    
     # check if the np image array is 8x8
     if input.shape == (8, 8):
-        # Flatten image
-        input = input.flatten()
-    
-        # Tranform image array
-        input =Tensor(input)
-        
-        # Flatten image
-        input = input.view(-1)
-        
-        # Add batch dimension
-        input = input.unsqueeze(0)
         
         # Forward pass
-        output = model(input)
+        forward_steps = model.forward_steps(input)
+        output = forward_steps[-1]
         
-        # Remove batch dimension
-        output = output.squeeze()
+        # Normalize output
+        min_val = output.min()
+        max_val = output.max()
+        output = (output - min_val) / (max_val - min_val)
         
-        # Transform output to numpy array and dataframe
-        output = output.detach().numpy()
+        # Apply Softmax to logits
+        output = softmax(output)
+        
+        # Create DataFrame
         output = pd.DataFrame(output, columns=['probabilities'])
         
         return output

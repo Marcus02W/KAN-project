@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import torch
 from torchvision import transforms
+from torch.nn import CrossEntropyLoss
 
 # set seed
 torch.manual_seed(42)
@@ -59,7 +60,7 @@ for hidden_size in hidden_sizes:
         hidden_size = hidden_size
         output_size = train['label'].nunique()
         hidden_act = 'relu'
-        output_act = 'softmax'
+        output_act = 'identity'
         dropout = 0.1
 
         # create model
@@ -87,9 +88,10 @@ for hidden_size in hidden_sizes:
 
         # train model
         time_at_start = pd.Timestamp.now()
-        loss = model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss, return_loss)
+        loss = model.fit(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss, return_loss)
         time_at_end = pd.Timestamp.now()
-        df['loss'] = [loss]
+        df['train_loss_history'] = [loss]
+        df['train_loss'] = df['train_loss_history'][0][-1]
         
         # save time information
         time = time_at_end - time_at_start
@@ -97,6 +99,12 @@ for hidden_size in hidden_sizes:
         minutes, seconds = divmod(remainder, 60)
         time = f'{hours}h:{minutes}m:{seconds}s'
         df['time'] = time
+        
+        # get the loss value on the test set
+        ce_loss = CrossEntropyLoss()
+        preds = model(x_test)
+        loss = ce_loss(preds, y_test)
+        df['test_loss'] = loss.item()
 
         # test model
         metric = 'accuracy'

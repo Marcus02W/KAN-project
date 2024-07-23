@@ -14,7 +14,7 @@ def interpolate_color(color0, color1, x):
         tuple: The interpolated RGB color.
     """
     if not (0 <= x <= 1):
-        raise ValueError("The interpolation factor x must be between 0 and 1.")
+        raise ValueError(f"The interpolation factor x must be between 0 and 1. The value of x was: {x}")
 
     r = int(color0[0] + (color1[0] - color0[0]) * x)
     g = int(color0[1] + (color1[1] - color0[1]) * x)

@@ -59,7 +59,7 @@ if mode == 'train':
     hidden_size = 32
     output_size = train['label'].nunique()
     hidden_act = 'relu'
-    output_act = 'softmax'
+    output_act = 'identity'
     dropout = 0.1
 
     # create model
@@ -70,7 +70,7 @@ if mode == 'train':
     batch_size = 1024
     loss_fn = 'cross_entropy'
     max_epochs = 64
-    early_stop_threshold = 0.01
+    early_stop_threshold = 0.05
     early_stop_patience = 4
     lr = 0.001
     optimizer = 'adam'
@@ -78,7 +78,7 @@ if mode == 'train':
     return_loss = False
 
     # train model
-    model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss)
+    model.fit(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, plot_loss, return_loss)
 
     # test model
     metric = 'accuracy'

@@ -29,7 +29,7 @@ y_train = torch.tensor(train['median_house_value'].values, dtype=torch.float32)
 y_test = torch.tensor(test['median_house_value'].values, dtype=torch.float32)
 
 # set mode ('train', 'opt', 'load)
-mode = 'opt'
+mode = 'load'
 
 # regular training
 if mode == 'train':
@@ -47,7 +47,7 @@ if mode == 'train':
     model.summary()
 
     # train parameters
-    batch_size = 128
+    batch_size = 1024
     loss_fn = 'mae'
     max_epochs = 128
     early_stop_threshold = 1000
@@ -58,7 +58,7 @@ if mode == 'train':
     return_loss = False
 
     # train model
-    model.train(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, loss_plot, return_loss)
+    model.fit(x_train, y_train, batch_size, loss_fn, max_epochs, early_stop_threshold, early_stop_patience, lr, optimizer, loss_plot, return_loss)
 
     # test model
     metric = 'mape'
@@ -110,7 +110,7 @@ elif mode == 'opt':
 # loading and testing model    
 elif mode == 'load':
     # load model
-    model = torch.load('../models/MLP/Demo/California_Housing_MLP.pth')
+    model = torch.load('../models/MLP/Demo/California_Housing_MLP_OPT.pth')
     
     # test model
     batch_size = 1024
