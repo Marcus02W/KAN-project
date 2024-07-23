@@ -258,7 +258,7 @@ def mlp_inference_vis(mlp, input_image, figsize=(20, 10), bottom2top=True):
         else:
             normalized_activations.append(act)
     
-    # Initialise dictionary to store neuron labels
+    # Initialize dictionary to store neuron labels
     labels = {}
     
     # Determine the maximum number of neurons in any layer
@@ -277,7 +277,6 @@ def mlp_inference_vis(mlp, input_image, figsize=(20, 10), bottom2top=True):
             node_id = (layer, neuron)
             
             # Determine the node color based on the activation value
-            
             activation_value = normalized_activations[layer][neuron]
             node_color = interpolate_color((12, 142, 210), (186, 0, 32), activation_value)
             node_color = tuple(val / 255 for val in node_color)
@@ -291,14 +290,20 @@ def mlp_inference_vis(mlp, input_image, figsize=(20, 10), bottom2top=True):
     # Normalize weights and add connections to the graph with edge transparency based on weights
     for layer in range(len(weights_list)):
         weights = weights_list[layer]
-        # Normalize weights between 0 and 1
-        norm_weights = (weights - weights.min()) / (weights.max() - weights.min())
+        # Calculate weighted inputs for the current layer (excluding input layer)
+        weighted_inputs = activations[layer] @ weights
+        
+        # Normalize weighted inputs layerwise between 0 and 1
+        norm_weighted_inputs = (weighted_inputs - weighted_inputs.min()) / (weighted_inputs.max() - weighted_inputs.min())
         
         for neuron1 in range(weights.shape[0]):
             for neuron2 in range(weights.shape[1]):
-                # Get the normalized weight for the edge transparency
-                transparency = norm_weights[neuron1, neuron2]
-                G.add_edge((layer, neuron1), (layer + 1, neuron2), weight=transparency)
+                # Get the normalized weighted input for the edge color
+                weighted_value = norm_weighted_inputs[neuron2]
+                edge_color = interpolate_color((12, 142, 210), (186, 0, 32), weighted_value)
+                edge_color = tuple(val / 255 for val in edge_color)
+                transparency = norm_weighted_inputs[neuron2]
+                G.add_edge((layer, neuron1), (layer + 1, neuron2), weight=transparency, color=edge_color)
     
     # Set up plot
     fig, ax = plt.subplots(figsize=figsize)
@@ -307,9 +312,9 @@ def mlp_inference_vis(mlp, input_image, figsize=(20, 10), bottom2top=True):
     pos = nx.get_node_attributes(G, 'pos')
     node_colors = [G.nodes[node]['color'] for node in G.nodes]
     
-    # Draw the graph to the plot with edge transparency based on weights
+    # Draw the graph to the plot with edge transparency and colors based on weighted inputs
     edges = G.edges(data=True)
-    edge_colors = [(12/255, 142/255, 210/255, edge[2]['weight']) for edge in edges]
+    edge_colors = [edge[2]['color'] + (edge[2]['weight'],) for edge in edges]
     nx.draw(G, pos, labels=labels, with_labels=False, arrows=False, node_size=160, node_color=node_colors, edge_color=edge_colors, edgecolors=[(0/255, 18/255, 30/255)], width=0.6)
     
     # Adjust plot limits to reduce space
