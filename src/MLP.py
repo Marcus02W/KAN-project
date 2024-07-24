@@ -455,8 +455,7 @@ def mnist_forward_df(model: MLP, input: np.array) -> pd.DataFrame:
     """
     
     def softmax(x):
-        e_x = np.exp(x - np.max(x))
-        return e_x / e_x.sum(axis=0)
+        return x / x.sum(axis=0)
     
     # check if the np image array is 8x8
     if input.shape == (8, 8):
