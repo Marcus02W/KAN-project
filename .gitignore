@@ -10,3 +10,4 @@ data/California_Housing/*.csv
 *.png
 wandb
 MNIST
+config_list.json

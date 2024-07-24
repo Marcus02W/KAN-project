@@ -15,6 +15,41 @@ import sympy
 import io
 from PIL import Image
 
+def adjust_dict_colors(input_dict):
+    """
+    Passt jedes Value in einem Dictionary an, indem es zwischen blau (0) und rot (1) interpoliert.
+    """
+    def interpolate_color(value):
+        """
+        Interpoliert zwischen blau (0) und rot (1).
+        """
+        assert 0 <= value <= 1, "Value must be between 0 and 1"
+
+        # RGB-Werte
+        blue = np.array([0.047058823529411764, 0.5568627450980392, 0.8235294117647058])  # blau
+        yellow = np.array([0.7294117647058823, 0.0, 0.12549019607843137])   # gelb
+
+        # Lineare Interpolation
+        color = blue * (1 - value) + yellow * value
+
+        return color
+
+    return {k: interpolate_color(v) for k, v in input_dict.items()}
+
+def normalice(x):
+    # Berechne den minimalen und maximalen Wert
+    x_min = x.min()
+    x_max = x.max()
+
+    # Überprüfe, ob min und max gleich sind
+    if x_min == x_max:
+        x_normalized = torch.zeros_like(x)  # oder eine andere geeignete Konstante
+    else:
+        # Normalisiere den Tensor zwischen 0 und 1
+        x_normalized = (x - x_min) / (x_max - x_min)
+
+    return x_normalized
+
 def forward_cursed(self, x, singularity_avoiding=False, y_th=10.):
     print(f"Input shape: {x.shape}")
     print(f"Expected width: {self.width_in[0]}")
@@ -394,5 +429,12 @@ def plot_save(self, folder="./figures", beta=3, mask=False, metric='fa', scale=0
 MultKAN.plot = plot_save
 
 
-def df_foward_kan(img,model):
-    pred_df = model(img)
+def df_foward_kan(model,img,dataset):
+    repeated_img = img.repeat(2, 1)
+    pred_df, act_dict_test = model(repeated_img)
+    # Softmax Funktion anwenden
+    probabilities = torch.nn.functional.softmax(pred_df[0], dim=0)
+    pred_df_final = pd.DataFrame(probabilities.detach().numpy(), columns = ['Wahrscheinlichkeit'])
+    model(dataset['train_input'])
+    image = model.plot(beta=3, scale=1,folder="/pictures", out_vars=['0','1','2','3','4','5','6','7','8','9'], title = f"KAN",color_activations=act_dict_test,plus=0.5, ac_scale=1.2)
+    return pred_df_final, image
