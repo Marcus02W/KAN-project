@@ -7,3 +7,6 @@ __pycache__
 *.pt
 data/MNIST/*.csv
 data/California_Housing/*.csv
+*.png
+wandb
+MNIST
