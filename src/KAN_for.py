@@ -428,11 +428,20 @@ def plot_save(self, folder="./figures", beta=3, mask=False, metric='fa', scale=0
     if title is not None:
         plt.gcf().get_axes()[0].text(0.5, (y0 + z0) * (len(self.width) - 1) + 0.3, title, fontsize=40 * scale, horizontalalignment='center', verticalalignment='center', color='white')
 
+    # Save the plot to a BytesIO object (RAM)
     buf = io.BytesIO()
     plt.savefig(buf, format='png', bbox_inches='tight', dpi=150)
     plt.close()
     buf.seek(0)
-    return Image.open(buf)
+    
+    # Read the image from BytesIO and convert it to an RGB array
+    img = plt.imread(buf)
+    buf.close()
+    plt.close(fig)
+    
+    img = (img * 255).astype('uint8')
+    
+    return img
 
 MultKAN.plot = plot_save
 
@@ -442,7 +451,7 @@ def df_foward_kan(model,img,dataset,scale=1):
     pred_df, act_dict_test = model(repeated_img)
     # Softmax Funktion anwenden
     probabilities = torch.nn.functional.softmax(pred_df[0], dim=0)
-    pred_df_final = pd.DataFrame(probabilities.detach().numpy(), columns = ['Wahrscheinlichkeit'])
+    pred_df_final = pd.DataFrame(probabilities.detach().numpy(), columns = ['probablities'])
     model(dataset['train_input'])
     image = model.plot(beta=3, scale=scale,folder="/pictures", out_vars=['0','1','2','3','4','5','6','7','8','9'], title = f"KAN",color_activations=act_dict_test,plus=0.5, ac_scale=1.2)
     return pred_df_final, image

@@ -255,11 +255,20 @@ def plot_save(self, folder="./figures", beta=3, mask=False, metric='fa', scale=0
     if title is not None:
         plt.gcf().get_axes()[0].text(0.5, (y0 + z0) * (len(self.width) - 1) + 0.3, title, fontsize=40 * scale, horizontalalignment='center', verticalalignment='center', color='white')
 
+    # Save the plot to a BytesIO object (RAM)
     buf = io.BytesIO()
     plt.savefig(buf, format='png', bbox_inches='tight', dpi=150)
     plt.close()
     buf.seek(0)
-    return Image.open(buf)
+    
+    # Read the image from BytesIO and convert it to an RGB array
+    img = plt.imread(buf)
+    buf.close()
+    plt.close(fig)
+    
+    img = (img * 255).astype('uint8')
+    
+    return img
 
 MultKAN.plot = plot_save
 
