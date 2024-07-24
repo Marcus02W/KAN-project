@@ -220,6 +220,8 @@ def plot_save(self, folder="./figures", beta=3, mask=False, metric='fa', scale=0
                 activation_color = get_activation_color(l, i, j)
                 if activation_color is not None:
                     color = activation_color
+                else:
+                    color = (0.047058823529411764, 0.5568627450980392, 0.8235294117647058)
 
                 if tick:
                     ax.tick_params(axis="y", direction="in", pad=-22, labelsize=50)
@@ -316,6 +318,8 @@ def plot_save(self, folder="./figures", beta=3, mask=False, metric='fa', scale=0
                     activation_color = get_activation_color(l, i, j)
                     if activation_color is not None:
                         color = activation_color
+                    else:
+                        color = (0.047058823529411764, 0.5568627450980392, 0.8235294117647058)
 
                     if mask:
                         plt.plot([1 / (2 * n) + i / n, 1 / (2 * N) + id_ / N], [l * (y0 + z0), l * (y0 + z0) + y0 / 2 - y1], color=color, lw=2 * scale, alpha=alpha[l][j][i] * self.mask[l][i].item() * self.mask[l + 1][j].item())
