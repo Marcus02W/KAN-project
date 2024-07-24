@@ -1,5 +1,8 @@
-from kan import KAN
-from kan import MultKAN
+import os
+cwd = os.getcwd()
+os.chdir('../KAN-Model')
+from kan_local import KAN
+from kan_local import MultKAN
 import matplotlib.pyplot as plt
 import torch
 import numpy as np
@@ -7,13 +10,14 @@ import pandas as pd
 import yaml
 import os
 from torchvision import transforms
-from kan.spline import B_batch
+from kan_local.spline import B_batch
 import numpy as np
 from sympy.printing import latex
 from sympy import *
 import sympy
 import io
 from PIL import Image
+os.chdir(cwd)
 
 def adjust_dict_colors(input_dict):
     """
@@ -375,7 +379,7 @@ def plot_save(self, folder="./figures", beta=3, mask=False, metric='fa', scale=0
         N = n = width_out[l + 1]
         for j in range(n):
             id_ = j
-            path = "./kan/assets/img/sum_symbol.png"
+            path = "./kan_local/assets/img/sum_symbol.png"
             im = plt.imread(path)
             left = DC_to_NFC([1 / (2 * N) + id_ / N - y2, 0])[0]
             right = DC_to_NFC([1 / (2 * N) + id_ / N + y2, 0])[0]
@@ -391,7 +395,7 @@ def plot_save(self, folder="./figures", beta=3, mask=False, metric='fa', scale=0
         n_mult = width[l + 1][1]
         for j in range(n_mult):
             id_ = j + n_sum
-            path = "./kan/assets/img/mult_symbol.png"
+            path = "./kan_local/assets/img/mult_symbol.png"
             im = plt.imread(path)
             left = DC_to_NFC([1 / (2 * N) + id_ / N - y2, 0])[0]
             right = DC_to_NFC([1 / (2 * N) + id_ / N + y2, 0])[0]
