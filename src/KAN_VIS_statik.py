@@ -256,7 +256,7 @@ def plot_save(self, folder="./figures", beta=3, mask=False, metric='fa', scale=0
         plt.gcf().get_axes()[0].text(0.5, (y0 + z0) * (len(self.width) - 1) + 0.3, title, fontsize=40 * scale, horizontalalignment='center', verticalalignment='center', color='white')
 
     buf = io.BytesIO()
-    plt.savefig(buf, format='png', bbox_inches='tight', dpi=100)
+    plt.savefig(buf, format='png', bbox_inches='tight', dpi=150)
     plt.close()
     buf.seek(0)
     return Image.open(buf)
@@ -265,5 +265,5 @@ MultKAN.plot = plot_save
 
 
 def kan_weights_vis(model: None,scale=1) -> None:
-    img = model.plot(beta=3, scale=scale,folder="/pictures", out_vars=['0','1','2','3','4','5','6','7','8','9'], title = f"KAN")
+    img = model.plot(beta=3, scale=scale,folder="/pictures", out_vars=['0','1','2','3','4','5','6','7','8','9'], title = f"KAN",plus=0.5, ac_scale=1.2)
     return img
