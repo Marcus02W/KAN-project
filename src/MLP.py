@@ -454,8 +454,22 @@ def mnist_forward_df(model: MLP, input: np.array) -> pd.DataFrame:
         DataFrame: DataFrame containing output probabilities. Data is stored in 'probabilities' column.
     """
     
-    def softmax(x):
-        return x / x.sum(axis=0)
+    def stable_softmax(logits):
+        """
+        Numerically stable softmax function.
+        
+        Args:
+            logits (np.array): Array of logits.
+            
+        Returns:
+            np.array: Softmax probabilities.
+        """
+        # Subtract the max logit for numerical stability
+        max_logit = np.max(logits)
+        exp_logits = np.exp(logits - max_logit)
+        softmax_probs = exp_logits / np.sum(exp_logits)
+        
+        return softmax_probs
     
     # check if the np image array is 8x8
     if input.shape == (8, 8):
@@ -464,13 +478,8 @@ def mnist_forward_df(model: MLP, input: np.array) -> pd.DataFrame:
         forward_steps = model.forward_steps(input)
         output = forward_steps[-1]
         
-        # Normalize output
-        min_val = output.min()
-        max_val = output.max()
-        output = (output - min_val) / (max_val - min_val)
-        
-        # Apply Softmax to logits
-        output = softmax(output)
+        # Apply stable softmax to logits
+        output = stable_softmax(output)
         
         # Create DataFrame
         output = pd.DataFrame(output, columns=['probabilities'])
